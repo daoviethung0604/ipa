@@ -1,0 +1,70 @@
+name: Build IPA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode Version
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Compile and Package IPA
+        run: |
+          # 1. Tạo cấu trúc thư mục Payload của app
+          mkdir -p Payload/MyApp.app
+          
+          # 2. Biên dịch mã nguồn Swift sang tệp thực thi iOS
+          xcrun -sdk iphoneos swiftc main.swift -target arm64-apple-ios15.0 -o Payload/MyApp.app/MyApp
+          
+          # 3. Tạo file Info.plist bắt buộc cho ứng dụng iOS
+          cat <<'EOF' > Payload/MyApp.app/Info.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleDevelopmentRegion</key>
+              <string>en</string>
+              <key>CFBundleExecutable</key>
+              <string>MyApp</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.demo.myapp</string>
+              <key>CFBundleInfoDictionaryVersion</key>
+              <string>6.0</string>
+              <key>CFBundleName</key>
+              <string>MyApp</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>CFBundleShortVersionString</key>
+              <string>1.0</string>
+              <key>CFBundleVersion</key>
+              <string>1</string>
+              <key>LSRequiresIPhoneOS</key>
+              <true/>
+              <key>UIRequiredDeviceCapabilities</key>
+              <array>
+                  <string>arm64</string>
+              </array>
+              <key>UISupportedInterfaceOrientations</key>
+              <array>
+                  <string>UIInterfaceOrientationPortrait</string>
+              </array>
+          </dict>
+          </plist>
+          EOF
+          
+          # 4. Đóng gói thư mục Payload thành tệp .ipa
+          zip -r MyApp.ipa Payload
+
+      - name: Upload IPA File
+        uses: actions/upload-artifact@v4
+        with:
+          name: App-IPA
+          path: MyApp.ipa
