@@ -8,7 +8,7 @@ class ViewController: UIViewController, WKNavigationDelegate {
         let webConfiguration = WKWebViewConfiguration()
         webView = WKWebView(frame: .zero, configuration: webConfiguration)
         webView.navigationDelegate = self
-        view = webView
+        self.view = webView
     }
 
     override func viewDidLoad() {
@@ -20,6 +20,23 @@ class ViewController: UIViewController, WKNavigationDelegate {
             let myRequest = URLRequest(url: url)
             webView.load(myRequest)
         }
+    }
+
+    // Xử lý khi trang web yêu cầu chuyển hướng hoặc mở liên kết mở Game
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if let url = navigationAction.request.url {
+            let scheme = url.scheme?.lowercased() ?? ""
+            
+            // Nếu liên kết không phải là http hoặc https (ví dụ: freefire://, itms-apps://,...)
+            if scheme != "http" && scheme != "https" && scheme != "about" {
+                if UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                    decisionHandler(.cancel)
+                    return
+                }
+            }
+        }
+        decisionHandler(.allow)
     }
 }
 
