@@ -18,13 +18,10 @@ jobs:
 
       - name: Compile and Package IPA
         run: |
-          # 1. Tạo cấu trúc thư mục Payload của app
           mkdir -p Payload/MyApp.app
           
-          # 2. Biên dịch mã nguồn Swift sang tệp thực thi iOS
           xcrun -sdk iphoneos swiftc main.swift -target arm64-apple-ios15.0 -o Payload/MyApp.app/MyApp
           
-          # 3. Tạo file Info.plist bắt buộc cho ứng dụng iOS
           cat <<'EOF' > Payload/MyApp.app/Info.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -48,6 +45,11 @@ jobs:
               <string>1</string>
               <key>LSRequiresIPhoneOS</key>
               <true/>
+              <key>NSAppTransportSecurity</key>
+              <dict>
+                  <key>NSAllowsArbitraryLoads</key>
+                  <true/>
+              </dict>
               <key>UIRequiredDeviceCapabilities</key>
               <array>
                   <string>arm64</string>
@@ -60,7 +62,6 @@ jobs:
           </plist>
           EOF
           
-          # 4. Đóng gói thư mục Payload thành tệp .ipa
           zip -r MyApp.ipa Payload
 
       - name: Upload IPA File
