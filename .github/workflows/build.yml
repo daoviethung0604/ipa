@@ -18,10 +18,13 @@ jobs:
 
       - name: Compile and Package IPA
         run: |
+          # 1. Tạo cấu trúc thư mục Payload cho IPA
           mkdir -p Payload/MyApp.app
           
+          # 2. Biên dịch mã nguồn Swift sang file thực thi iOS
           xcrun -sdk iphoneos swiftc main.swift -target arm64-apple-ios15.0 -o Payload/MyApp.app/MyApp
           
+          # 3. Tạo file Info.plist có từ khóa LaunchStoryboardName (ĐÂY LÀ PHẦN QUAN TRỌNG ĐỂ CÓ TOÀN MÀN HÌNH)
           cat <<'EOF' > Payload/MyApp.app/Info.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -45,11 +48,15 @@ jobs:
               <string>1</string>
               <key>LSRequiresIPhoneOS</key>
               <true/>
+              # --- QUAN TRỌNG: Cấp quyền mạng để tải Web ---
               <key>NSAppTransportSecurity</key>
               <dict>
                   <key>NSAllowsArbitraryLoads</key>
                   <true/>
               </dict>
+              # --- QUAN TRỌNG: Khai báo Launch Storyboard để có toàn màn hình trên notch ---
+              <key>UILaunchStoryboardName</key>
+              <string>LaunchScreen</string>
               <key>UIRequiredDeviceCapabilities</key>
               <array>
                   <string>arm64</string>
@@ -62,6 +69,7 @@ jobs:
           </plist>
           EOF
           
+          # 4. Đóng gói thư mục Payload thành tệp .ipa
           zip -r MyApp.ipa Payload
 
       - name: Upload IPA File
