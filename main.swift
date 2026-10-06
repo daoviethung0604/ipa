@@ -14,8 +14,7 @@ class ViewController: UIViewController, WKNavigationDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // ⚠️ THAY LINK TRANG WEB CỦA BẠN VÀO ĐÂY:
-        let urlString = "https://example.com"
+        let urlString = "https://daoviethung0604.github.io/neww/"
         
         if let url = URL(string: urlString) {
             let myRequest = URLRequest(url: url)
